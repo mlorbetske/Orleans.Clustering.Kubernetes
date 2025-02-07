@@ -1,19 +1,18 @@
-using k8s;
-using k8s.Models;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Rest;
-using Newtonsoft.Json.Linq;
-using Orleans.Clustering.Kubernetes.Models;
-using Orleans.Configuration;
-using Orleans.Runtime;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using k8s;
+using k8s.Autorest;
+using k8s.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
+using Orleans.Clustering.Kubernetes.Models;
+using Orleans.Configuration;
+using Orleans.Runtime;
 
 namespace Orleans.Clustering.Kubernetes
 {
@@ -51,7 +50,7 @@ namespace Orleans.Clustering.Kubernetes
 
             if (clusterVersion != null)
             {
-                await this._kubeClient.DeleteNamespacedCustomObjectAsync(
+                await this._kubeClient.CustomObjects.DeleteNamespacedCustomObjectAsync(
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
                     this._namespace,
@@ -63,7 +62,7 @@ namespace Orleans.Clustering.Kubernetes
 
             foreach (var silo in silos)
             {
-                await this._kubeClient.DeleteNamespacedCustomObjectAsync(
+                await this._kubeClient.CustomObjects.DeleteNamespacedCustomObjectAsync(
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
                     this._namespace,
@@ -83,7 +82,7 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    existentSiloEntry = ((JObject)await this._kubeClient.GetNamespacedCustomObjectAsync(
+                    existentSiloEntry = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
@@ -110,7 +109,7 @@ namespace Orleans.Clustering.Kubernetes
                     return false;
                 }
 
-                var updatedVersionEntity = await this._kubeClient.ReplaceNamespacedCustomObjectAsync(
+                var updatedVersionEntity = await this._kubeClient.CustomObjects.ReplaceNamespacedCustomObjectAsync(
                     versionEntity,
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
@@ -124,7 +123,7 @@ namespace Orleans.Clustering.Kubernetes
                     return false;
                 }
 
-                var createdSiloEntity = await this._kubeClient.CreateNamespacedCustomObjectAsync(
+                var createdSiloEntity = await this._kubeClient.CustomObjects.CreateNamespacedCustomObjectAsync(
                     siloEntity,
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
@@ -205,7 +204,7 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    entity = ((JObject)await this._kubeClient.GetNamespacedCustomObjectAsync(
+                    entity = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
@@ -261,7 +260,7 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    siloEntity = ((JObject)await this._kubeClient.GetNamespacedCustomObjectAsync(
+                    siloEntity = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
@@ -279,7 +278,7 @@ namespace Orleans.Clustering.Kubernetes
 
                 siloEntity.IAmAliveTime = entry.IAmAliveTime;
 
-                await this._kubeClient.ReplaceNamespacedCustomObjectAsync(
+                await this._kubeClient.CustomObjects.ReplaceNamespacedCustomObjectAsync(
                     siloEntity,
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
@@ -314,7 +313,7 @@ namespace Orleans.Clustering.Kubernetes
                     return false;
                 }
 
-                var updatedVersionEntity = await this._kubeClient.ReplaceNamespacedCustomObjectAsync(
+                var updatedVersionEntity = await this._kubeClient.CustomObjects.ReplaceNamespacedCustomObjectAsync(
                     versionEntity,
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
@@ -328,7 +327,7 @@ namespace Orleans.Clustering.Kubernetes
                     return false;
                 }
 
-                var updated = await this._kubeClient.ReplaceNamespacedCustomObjectAsync(
+                var updated = await this._kubeClient.CustomObjects.ReplaceNamespacedCustomObjectAsync(
                     siloEntity,
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
@@ -363,7 +362,7 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    version = ((JObject)await this._kubeClient.GetNamespacedCustomObjectAsync(
+                    version = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
@@ -390,7 +389,7 @@ namespace Orleans.Clustering.Kubernetes
                         Metadata = new V1ObjectMeta { Name = this._clusterOptions.ClusterId }
                     };
 
-                    var created = ((JObject)await this._kubeClient.CreateNamespacedCustomObjectAsync(
+                    var created = ((JObject)await this._kubeClient.CustomObjects.CreateNamespacedCustomObjectAsync(
                         version,
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
@@ -417,7 +416,7 @@ namespace Orleans.Clustering.Kubernetes
 
         private async Task<ClusterVersionEntity> GetClusterVersion()
         {
-            var versions = ((JObject)await this._kubeClient.ListNamespacedCustomObjectAsync(
+            var versions = ((JObject)await this._kubeClient.CustomObjects.ListNamespacedCustomObjectAsync(
                 Constants.ORLEANS_GROUP,
                 Constants.PROVIDER_MODEL_VERSION,
                 this._namespace, ClusterVersionEntity.PLURAL)
@@ -431,7 +430,7 @@ namespace Orleans.Clustering.Kubernetes
 
         private async Task<IReadOnlyList<SiloEntity>> GetSilos()
         {
-            var silos = ((JObject)await this._kubeClient.ListNamespacedCustomObjectAsync(
+            var silos = ((JObject)await this._kubeClient.CustomObjects.ListNamespacedCustomObjectAsync(
                 Constants.ORLEANS_GROUP,
                 Constants.PROVIDER_MODEL_VERSION,
                 this._namespace, SiloEntity.PLURAL)
@@ -543,7 +542,7 @@ namespace Orleans.Clustering.Kubernetes
 
             foreach (var deadSilo in toDelete)
             {
-                await this._kubeClient.DeleteNamespacedCustomObjectAsync(
+                await this._kubeClient.CustomObjects.DeleteNamespacedCustomObjectAsync(
                     Constants.ORLEANS_GROUP,
                     Constants.PROVIDER_MODEL_VERSION,
                     this._namespace,

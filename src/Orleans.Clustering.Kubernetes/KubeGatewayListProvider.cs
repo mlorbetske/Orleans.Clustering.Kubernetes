@@ -48,7 +48,7 @@ namespace Orleans.Clustering.Kubernetes
         {
             try
             {
-                var silos = ((JObject)await this._kube.ListNamespacedCustomObjectAsync(Constants.ORLEANS_GROUP, Constants.PROVIDER_MODEL_VERSION, this._namespace, SiloEntity.PLURAL))?["items"]?.ToObject<SiloEntity[]>();
+                var silos = ((JObject)await this._kube.CustomObjects.ListNamespacedCustomObjectAsync(Constants.ORLEANS_GROUP, Constants.PROVIDER_MODEL_VERSION, this._namespace, SiloEntity.PLURAL))?["items"]?.ToObject<SiloEntity[]>();
                 if (silos == null || silos.Length == 0) return Array.Empty<Uri>();
 
                 var gateways = silos.Where(s => s.Status == SiloStatus.Active && s.ProxyPort != 0 && s.ClusterId == this._clusterId)
