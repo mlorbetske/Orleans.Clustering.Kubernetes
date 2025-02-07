@@ -9,10 +9,10 @@ using k8s.Autorest;
 using k8s.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using Orleans.Clustering.Kubernetes.Models;
 using Orleans.Configuration;
 using Orleans.Runtime;
+using YamlDotNet.Core;
 
 namespace Orleans.Clustering.Kubernetes
 {
@@ -82,13 +82,13 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    existentSiloEntry = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
+                    existentSiloEntry = (await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
                         SiloEntity.PLURAL,
                         siloEntity.Metadata.Name
-                    ))?.ToObject<SiloEntity>();
+                    )).ConvertCustomObject<SiloEntity>();
                 }
                 catch (HttpOperationException ex)
                 {
@@ -204,13 +204,13 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    entity = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
+                    entity = (await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
                         SiloEntity.PLURAL,
                         name
-                    ))?.ToObject<SiloEntity>();
+                    )).ConvertCustomObject<SiloEntity>();
                 }
                 catch (HttpOperationException ex)
                 {
@@ -260,13 +260,13 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    siloEntity = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
+                    siloEntity = (await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
                         SiloEntity.PLURAL,
                         name
-                    ))?.ToObject<SiloEntity>();
+                    )).ConvertCustomObject<SiloEntity>();
                 }
                 catch (HttpOperationException ex)
                 {
@@ -362,13 +362,13 @@ namespace Orleans.Clustering.Kubernetes
 
                 try
                 {
-                    version = ((JObject)await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
+                    version = (await this._kubeClient.CustomObjects.GetNamespacedCustomObjectAsync(
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
                         ClusterVersionEntity.PLURAL,
                         this._clusterOptions.ClusterId
-                    ))?.ToObject<ClusterVersionEntity>();
+                    )).ConvertCustomObject<ClusterVersionEntity>();
                 }
                 catch (HttpOperationException ex)
                 {
@@ -389,13 +389,13 @@ namespace Orleans.Clustering.Kubernetes
                         Metadata = new V1ObjectMeta { Name = this._clusterOptions.ClusterId }
                     };
 
-                    var created = ((JObject)await this._kubeClient.CustomObjects.CreateNamespacedCustomObjectAsync(
+                    var created = (await this._kubeClient.CustomObjects.CreateNamespacedCustomObjectAsync(
                         version,
                         Constants.ORLEANS_GROUP,
                         Constants.PROVIDER_MODEL_VERSION,
                         this._namespace,
                         ClusterVersionEntity.PLURAL
-                    ))?.ToObject<ClusterVersionEntity>();
+                    )).ConvertCustomObject<ClusterVersionEntity>();
 
                     if (created != null)
                     {
@@ -416,11 +416,10 @@ namespace Orleans.Clustering.Kubernetes
 
         private async Task<ClusterVersionEntity> GetClusterVersion()
         {
-            var versions = ((JObject)await this._kubeClient.CustomObjects.ListNamespacedCustomObjectAsync(
+            var versions = (await this._kubeClient.CustomObjects.ListNamespacedCustomObjectAsync(
                 Constants.ORLEANS_GROUP,
                 Constants.PROVIDER_MODEL_VERSION,
-                this._namespace, ClusterVersionEntity.PLURAL)
-            )?["items"]?.ToObject<ClusterVersionEntity[]>();
+                this._namespace, ClusterVersionEntity.PLURAL)).ConvertCustomObjectItems<ClusterVersionEntity>();
 
             if (versions == null) return null;
 
@@ -430,11 +429,11 @@ namespace Orleans.Clustering.Kubernetes
 
         private async Task<IReadOnlyList<SiloEntity>> GetSilos()
         {
-            var silos = ((JObject)await this._kubeClient.CustomObjects.ListNamespacedCustomObjectAsync(
+            var silos = (await this._kubeClient.CustomObjects.ListNamespacedCustomObjectAsync(
                 Constants.ORLEANS_GROUP,
                 Constants.PROVIDER_MODEL_VERSION,
                 this._namespace, SiloEntity.PLURAL)
-            )?["items"]?.ToObject<SiloEntity[]>();
+            ).ConvertCustomObjectItems<SiloEntity>();
 
             return silos.Where(s => s.ClusterId == this._clusterOptions.ClusterId).ToList();
         }

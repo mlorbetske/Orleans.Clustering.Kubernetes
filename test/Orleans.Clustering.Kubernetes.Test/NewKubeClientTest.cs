@@ -91,16 +91,16 @@ namespace Orleans.Clustering.Kubernetes.Test
                 Image = "my-awesome-cron-image"
             };
 
-            var customObjCreated = ((JObject)await this._kubeClient.CreateNamespacedCustomObjectAsync(newCustomObj, "stable.example.com", "v1", "default", "crontabs")).ToObject<TestCustomObject>();
+            var customObjCreated = (await this._kubeClient.CreateNamespacedCustomObjectAsync(newCustomObj, "stable.example.com", "v1", "default", "crontabs")).ConvertCustomObject<TestCustomObject>();
             Assert.NotNull(customObjCreated);
 
             var a = await this._kubeClient.ListNamespacedCustomObjectAsync("stable.example.com", "v1", "default", "crontabs");
 
-            var customObjs = ((JObject)await this._kubeClient.ListNamespacedCustomObjectAsync("stable.example.com", "v1", "default", "crontabs"))["items"].ToObject<TestCustomObject[]>();
+            var customObjs = (await this._kubeClient.ListNamespacedCustomObjectAsync("stable.example.com", "v1", "default", "crontabs")).ConvertCustomObjectItems<TestCustomObject>();
             Assert.NotNull(customObjs);
             Assert.True(customObjs.Length == 1);
 
-            var customObjFound = ((JObject)await this._kubeClient.GetNamespacedCustomObjectAsync("stable.example.com", "v1", "default", "crontabs", "my-new-cron-object")).ToObject<TestCustomObject>();
+            var customObjFound = (await this._kubeClient.GetNamespacedCustomObjectAsync("stable.example.com", "v1", "default", "crontabs", "my-new-cron-object")).ConvertCustomObject<TestCustomObject>();
             Assert.NotNull(customObjFound);
 
             await this._kubeClient.DeleteNamespacedCustomObjectAsync("stable.example.com", "v1", "default", "crontabs", "my-new-cron-object");
